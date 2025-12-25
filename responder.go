@@ -19,7 +19,7 @@ type ReadFunc func(*Request)
 type Responder interface {
 	// Add adds a service to the responder.
 	// Use the returned service handle to update service properties.
-	Add(srv Service) (ServiceHandle, error)
+	Add(srv Service, simple bool) (ServiceHandle, error)
 
 	// Remove removes the service associated with the service handle from the responder.
 	Remove(srv ServiceHandle)
@@ -79,20 +79,28 @@ func (r *responder) Remove(h ServiceHandle) {
 	}
 }
 
-func (r *responder) Add(srv Service) (ServiceHandle, error) {
+func (r *responder) Add(srv Service, simple bool) (ServiceHandle, error) {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
 
 	if r.isRunning {
-		ctx, cancel := context.WithCancel(context.TODO())
-		defer cancel()
+		if simple {
+			srv, err := r.registerSimple(srv)
+			if err != nil {
+				return nil, err
+			}
+			return r.addManaged(srv), nil
+		} else {
+			ctx, cancel := context.WithCancel(context.TODO())
+			defer cancel()
 
-		srv, err := r.register(ctx, srv)
-		if err != nil {
-			return nil, err
+			srv, err := r.register(ctx, srv)
+			if err != nil {
+				return nil, err
+			}
+			return r.addManaged(srv), nil
 		}
 
-		return r.addManaged(srv), nil
 	}
 
 	return r.addUnmanaged(srv), nil
@@ -174,7 +182,7 @@ func (r *responder) register(ctx context.Context, srv Service) (Service, error) 
 		return srv, fmt.Errorf("cannot register service when responder is not responding")
 	}
 
-	log.Debug.Printf("Probing for host %s and service %s…\n", srv.Hostname(), srv.ServiceInstanceName())
+	log.Info.Printf("Probing for host %s and service %s…\n", srv.Hostname(), srv.ServiceInstanceName())
 	probed, err := ProbeService(ctx, srv)
 	if err != nil {
 		return srv, err
@@ -187,6 +195,15 @@ func (r *responder) register(ctx context.Context, srv Service) (Service, error) 
 	go r.announce(srvs)
 
 	return probed, nil
+}
+
+func (r *responder) registerSimple(srv Service) (Service, error) {
+	if !r.isRunning {
+		return srv, fmt.Errorf("cannot register service when responder is not responding")
+	}
+
+	go r.announce([]*Service{&srv})
+	return srv, nil
 }
 
 func (r *responder) addManaged(srv Service) ServiceHandle {

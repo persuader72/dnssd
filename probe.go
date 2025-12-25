@@ -33,7 +33,7 @@ func ProbeService(ctx context.Context, srv Service) (Service, error) {
 	// the range 0-250 ms. (RFC6762 8.1)
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	delay := time.Duration(r.Intn(250)) * time.Millisecond
-	log.Debug.Println("Probing delay", delay)
+	log.Info.Println("Probing delay", delay)
 	time.Sleep(delay)
 
 	return probeService(probeCtx, conn, srv, 250*time.Millisecond, false)
@@ -90,11 +90,11 @@ func probeService(ctx context.Context, conn MDNSConn, srv Service, delay time.Du
 			// If the host finds that its own data is lexicographically earlier,
 			// then it defers to the winning host by waiting one second,
 			// and then begins probing for this record again. (RFC6762 8.2)
-			log.Debug.Println("Increase wait time after receiving conflicting data")
+			log.Info.Println("Increase wait time after receiving conflicting data")
 			delay = 1 * time.Second
 		}
 
-		log.Debug.Println("Probing wait", delay)
+		log.Info.Println("Probing wait", delay)
 		time.Sleep(delay)
 	}
 
