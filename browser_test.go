@@ -52,7 +52,7 @@ func TestBrowse(t *testing.T) {
 				_ = rs.Respond(ctx)
 			}()
 
-			_, err = rs.Add(srv)
+			_, err = rs.Add(srv, true)
 			if err != nil {
 				t.Fatal(err)
 

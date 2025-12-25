@@ -76,7 +76,7 @@ func startDNSSDServer(ctx context.Context) {
 		slog.Fatal(err)
 	}
 
-	_, err = responder.Add(service)
+	_, err = responder.Add(service, true)
 	if err != nil {
 		slog.Fatal(err)
 	}

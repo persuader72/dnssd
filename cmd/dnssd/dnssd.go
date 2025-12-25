@@ -125,7 +125,7 @@ func register(instance string) {
 
 		go func() {
 			time.Sleep(1 * time.Second)
-			handle, err := resp.Add(srv)
+			handle, err := resp.Add(srv, false)
 			if err != nil {
 				fmt.Println(err)
 			} else {

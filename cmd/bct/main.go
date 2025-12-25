@@ -4,11 +4,12 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"github.com/brutella/dnssd"
-	"github.com/brutella/dnssd/log"
 	"os"
 	"os/signal"
 	"strings"
+
+	"github.com/brutella/dnssd"
+	"github.com/brutella/dnssd/log"
 )
 
 func main() {
@@ -42,7 +43,7 @@ func main() {
 					log.Debug.Fatal(err)
 				}
 				log.Debug.Printf("%+v\n", srv)
-				h, _ := resp.Add(srv)
+				h, _ := resp.Add(srv, true)
 
 				<-stop
 				resp.Remove(h)

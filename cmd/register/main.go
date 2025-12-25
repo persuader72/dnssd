@@ -73,7 +73,7 @@ func main() {
 
 		go func() {
 			time.Sleep(1 * time.Second)
-			handle, err := resp.Add(srv)
+			handle, err := resp.Add(srv, true)
 			if err != nil {
 				fmt.Println(err)
 			} else {
